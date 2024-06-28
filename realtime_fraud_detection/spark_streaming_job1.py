@@ -1,4 +1,3 @@
-
 import findspark
 from pyspark.sql.functions import from_json, udf, col
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType
@@ -25,7 +24,6 @@ spark = SparkSession.builder \
     .master("local[*]") \
     .config("spark.jars", "/Users/thainguyenvu/Downloads/postgresql-42.7.2.jar") \
     .getOrCreate()
-
 
 sc = spark.sparkContext
 print("Updated Scala Version:", sc._jvm.scala.util.Properties.versionString())
@@ -57,7 +55,7 @@ parsed_data = json_data.select(from_json(json_data.value, schema).alias("data"))
 
 from pyspark.ml import PipelineModel
 
-model = PipelineModel.load("pre_trained_model11")
+model = PipelineModel.load("pre_trained_model22")
 real_time_predictions = model.transform(parsed_data)
 
 # Apply the model transformation
@@ -66,9 +64,11 @@ transformed_data = model.transform(parsed_data)
 # Print the schema of the transformed data to check available columns
 transformed_data.printSchema()
 
+
 # Function to convert probability vector to string
 def vector_to_string(vector):
     return str(vector)
+
 
 # UDF to convert vector to string
 vector_to_string_udf = udf(vector_to_string, StringType())
@@ -92,8 +92,7 @@ if "probability" in transformed_data.columns:
 
 selected_columns_df = transformed_data.select(*selected_columns)
 
-
-# PostgreSQL connection properties
+# PostgresSQL connection properties
 jdbc_url = "jdbc:postgresql://localhost:5432/postgres"
 jdbc_properties = {
     "user": "postgres",
@@ -101,14 +100,16 @@ jdbc_properties = {
     "driver": "org.postgresql.Driver"
 }
 
-# Function to write each micro-batch to PostgreSQL
+
+# Function to write each micro-batch to PostgresSQL
 def write_to_postgres(batch_df, batch_id):
     print(f"Writing batch {batch_id} to PostgreSQL")
     batch_df.printSchema()
     batch_df.write \
         .jdbc(url=jdbc_url, table="financial_transactions_prediction1", mode="append", properties=jdbc_properties)
 
-# Write the selected data to PostgreSQL using foreachBatch
+
+# Write the selected data to PostgresSQL using foreachBatch
 query = selected_columns_df.writeStream \
     .foreachBatch(write_to_postgres) \
     .outputMode("append") \

@@ -6,7 +6,7 @@ from pyspark.ml import Pipeline
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.sql import SparkSession
 
-from evaluate_model import compute_metrics
+from common_utils.evaluate_model import compute_metrics
 
 # Create a Spark session
 spark = SparkSession.builder.appName("FraudDetection").getOrCreate()
