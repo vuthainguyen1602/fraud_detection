@@ -15,7 +15,7 @@ def produce_messages(producer, topic, dataframe):
     """Function to produce messages to a Kafka topic from a DataFrame."""
     logger.info(f"Starting to produce messages to topic '{topic}'")
 
-    time.sleep(5)  # Initial delay
+    time.sleep(1)  # Initial delay
     for index, row in dataframe.iterrows():
         message = {
             'transaction_id': int(row['transaction_id']),
