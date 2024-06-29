@@ -25,7 +25,7 @@ This project focuses on real-time fraud detection in financial transactions usin
 
 3. **Postgres database Integration:**
    - Stored data and predictions in Postgres database.
-   - 
+
 4. **Apache Superset dasboard:**
    - Retrieves and visualizes fraud detection insights from Postgres database.
 
