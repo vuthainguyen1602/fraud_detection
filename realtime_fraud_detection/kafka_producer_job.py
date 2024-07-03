@@ -28,7 +28,7 @@ def produce_messages(producer, topic, dataframe):
         }
         logger.debug(f"Sending message: {message}")
         producer.send(topic, json.dumps(message).encode('utf-8'))
-        time.sleep(5)  # Delay between messages
+        time.sleep(1)  # Delay between messages
 
     logger.info("Finished producing messages")
 
