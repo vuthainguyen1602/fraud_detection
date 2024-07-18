@@ -81,7 +81,7 @@ def save_model(model, model_path):
 
 def main():
     data_path = "/Users/thainguyenvu/Downloads/PS_20174392719_1491204439457_log.csv"
-    model_path = "pre_trained_model"
+    model_path = "pre_trained_model1"
 
     logger.info("Starting Fraud Detection job.")
 
