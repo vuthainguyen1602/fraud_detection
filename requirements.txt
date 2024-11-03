@@ -1,5 +1,4 @@
 pandas~=2.2.2
-pyspark
-kafka-python
-kafka-python3
+pyspark~=3.4.1
 python-dotenv
+boto3~=1.34.82

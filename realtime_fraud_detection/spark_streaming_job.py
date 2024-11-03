@@ -6,6 +6,12 @@ from pyspark.sql.types import StructType, StructField, StringType, DoubleType, I
 from pyspark.ml import PipelineModel
 import os
 import sys
+from datetime import datetime
+
+from realtime_fraud_detection.send_mail import send_fraud_alert_email
+
+# Get the current date and time
+now = datetime.now()
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -13,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration for the Spark job
 CONFIG = {
-    'spark_app_name': "KafkaElasticsearchIntegration",
+    'spark_app_name': "KafkaTreamingJob",
     'spark_master': "local[*]",
     'kafka_bootstrap_servers': "localhost:9092",
     'kafka_topic': "financial_transactions",
@@ -124,6 +130,31 @@ def prepare_output_data(transformed_data):
 
 
 def write_to_postgres(batch_df, batch_id):
+    # Handle send mail if fraud, prediction is 1
+    rows = batch_df.collect()
+    for row in rows:
+        print("Row type:", type(row))
+        print("Prediction type:", type(row['prediction']))
+        print("Raw prediction value:", row['prediction'])
+        if row['prediction'] == 1:
+            customer_info = {
+                "customer_name": "Nguyễn Văn A",
+                "recipient_email": "nvthai1602@gmail.com",
+                "transaction_amount": row['amount'],
+                "transaction_time": now.strftime("%Y-%m-%d %H:%M:%S")
+            }
+
+            send_fraud_alert_email(
+                customer_name=customer_info["customer_name"],
+                recipient_email=customer_info["recipient_email"],
+                transaction_amount=customer_info["transaction_amount"],
+                transaction_time=customer_info["transaction_time"],
+                support_phone="1900-1234",
+                support_email="hotro@example.com",
+                lock_card_link="https://your-bank.com/lock"
+            )
+
+    # Handle write data stream to Postgres
     logger.debug("Writing batch %s to PostgreSQL.", batch_id)
     jdbc_properties = {
         "user": CONFIG['postgres_user'],
@@ -163,9 +194,9 @@ def main():
     selected_columns_df = prepare_output_data(transformed_data)
 
     query = selected_columns_df.writeStream \
-        .foreachBatch(write_to_postgres) \
-        .outputMode("append") \
-        .start()
+            .foreachBatch(write_to_postgres) \
+            .outputMode("append") \
+            .start()
 
     logger.info("Streaming query started successfully.")
     query.awaitTermination()
