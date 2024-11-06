@@ -57,10 +57,10 @@ def make_predictions_with_loaded_models(test_df, models):
     combine_udf = udf(lambda *predictions: float(sum(predictions) / len(predictions)), DoubleType())
 
     logger.info("Combining predictions.")
-    final_predictions = predictions.withColumn("final_prediction",
+    final_predictions = predictions.withColumn("prediction",
                                                combine_udf(*[col(c) for c in prediction_columns]))
-    final_predictions = final_predictions.withColumn("final_prediction",
-                                                     when(col("final_prediction") >= 0.5, 1.0).otherwise(0.0))
+    final_predictions = final_predictions.withColumn("prediction",
+                                                     when(col("prediction") >= 0.5, 1.0).otherwise(0.0))
 
     logger.info("Final predictions calculated.")
     return final_predictions

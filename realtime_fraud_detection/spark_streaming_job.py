@@ -8,6 +8,7 @@ import os
 import sys
 from datetime import datetime
 
+from realtime_fraud_detection.load_model import load_models, make_predictions_with_loaded_models
 from realtime_fraud_detection.send_mail import send_fraud_alert_email
 
 # Get the current date and time
@@ -96,6 +97,23 @@ def load_and_apply_model(parsed_data):
         raise
     return transformed_data
 
+def load_boosting_and_apply_model(parsed_data, n_models):
+    logger.debug("Loading and applying the pre-trained model.")
+    try:
+        models = load_models(n_models)
+        logger.info("Model loaded successfully from path: %s", n_models)
+    except Exception as e:
+        logger.error("Failed to load model: %s", e)
+        raise
+
+    try:
+        transformed_data = make_predictions_with_loaded_models(parsed_data, models)
+        logger.info("Model applied successfully to the data.")
+    except Exception as e:
+        logger.error("Failed to apply model: %s", e)
+        raise
+    return transformed_data
+
 
 def prepare_output_data(transformed_data):
     logger.debug("Preparing output data for writing to PostgreSQL.")
@@ -151,7 +169,7 @@ def write_to_postgres(batch_df, batch_id):
                 transaction_time=customer_info["transaction_time"],
                 support_phone="1900-1234",
                 support_email="hotro@example.com",
-                lock_card_link="https://your-bank.com/lock"
+                lock_card_link="https://abc-bank.com/lock"
             )
 
     # Handle write data stream to Postgres
@@ -189,7 +207,11 @@ def main():
 
     parsed_data = parse_json_data(streaming_data, schema)
 
-    transformed_data = load_and_apply_model(parsed_data)
+    # Single model Gradient Boosted Trees
+    # transformed_data = load_and_apply_model(parsed_data)
+
+    # Load and handle bagging gradient boosted trees
+    transformed_data = load_boosting_and_apply_model(parsed_data, 10)
 
     selected_columns_df = prepare_output_data(transformed_data)
 
